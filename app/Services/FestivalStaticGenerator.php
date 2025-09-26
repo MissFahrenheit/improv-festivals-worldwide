@@ -34,7 +34,7 @@ class FestivalStaticGenerator
             "festivals" => $allFestivals,
         ])->render();
 
-        // Save to /public/home.html
+        // Save static HTML to /public/home.html
         File::put(public_path("home.html"), $html);
     }
 
@@ -92,6 +92,7 @@ class FestivalStaticGenerator
                     continue;
                 }
 
+                // Store spreadsheet values: cast "mm" (month) column to int, keep all other allowed columns as strings
                 if (in_array($columnTitle, $allowedKeys)) {
                     $festivalData[$columnTitle] =
                         $columnTitle === "mm" ? (int) $attribute : $attribute;
@@ -133,7 +134,7 @@ class FestivalStaticGenerator
      * @param int $currentYear Current year.
      * @param int $nextYear Next year.
      * @param int $currentMonth Current month (1-12).
-     * @return string|null Returns MM-YYYY string if the festival is upcoming, null otherwise.
+     * @return string|null Returns YYYY-MM string if the festival is upcoming, null otherwise.
      */
     private function getFestivalYearAndMonth(
         array $festivalData,
@@ -148,7 +149,6 @@ class FestivalStaticGenerator
 
         // Check current year column
         $currentYearValue = $festivalData[$currentYear] ?? null;
-        // if ($currentYearValue && $festivalMonth >= $currentMonth) {
         if (
             $currentYearValue &&
             preg_match("/\d/", $currentYearValue) &&
@@ -161,7 +161,6 @@ class FestivalStaticGenerator
 
         // Check next year column
         $nextYearValue = $festivalData[$nextYear] ?? null;
-        // if ($nextYearValue) {
         if ($nextYearValue && preg_match("/\d/", $nextYearValue)) {
             return Carbon::create($nextYear, $festivalMonth, 1)->format("Y-m");
         }

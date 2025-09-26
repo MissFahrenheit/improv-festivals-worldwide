@@ -109,21 +109,28 @@ nav {
     height: calc(100% - 2 * (var(--spacer-4)));
 }
 
-img.festival-image {
-    display: block;
-    height: inherit;
-    width: auto;
-    border-radius: 9px;
-}
+.date-img {
+    height: 50px;
 
-.date {
-    font-size: 1.125rem;
-    font-weight: 700;
+    span {
+        font-size: 1.125rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
 
     svg {
         width: 22px;
         height: 22px;
         fill: var(--primary-color);
+    }
+
+    img.festival-image {
+        display: block;
+        width: auto;
+        border-radius: 9px;
+        min-width: 0;
+        height: auto;
+        max-height: 50px;
     }
 }
 

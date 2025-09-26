@@ -8,15 +8,15 @@
             @endphp
 
             <div class="grid-item">
-                <div class="p-4 card ">
-                    <div class="flex align-items-center justify-content-between mb-4 gap-3" style="height:50px">
-                        <div class="flex align-items-center gap-2 date">
+                <div class="p-4 card">
+                    <div class="flex align-items-center justify-content-between mb-4 gap-3 date-img">
+                        <div class="flex align-items-center gap-2 date flex-grow-1 flex-shrink-0">
                             @include('components.icons', ['icon' => 'calendar'])
                             <span>{{ data_get($festival, $festivalYear) }}, {{ $festivalYear }}</span>
                         </div>
 
                         @if (data_get($festival, 'image'))
-                            <img class="festival-image" loading="lazy" src="{{ data_get($festival, 'image') }}" alt="{{ data_get($festival, 'festival-name-alphabetized') }}" height=50/>
+                            <img class="festival-image flex-shrink-1" loading="lazy" src="{{ data_get($festival, 'image') }}" alt="{{ data_get($festival, 'festival-name-alphabetized') }}" height=50/>
                         @endif
                     </div>
 
