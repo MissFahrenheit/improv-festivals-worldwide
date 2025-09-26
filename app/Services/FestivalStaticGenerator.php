@@ -24,22 +24,9 @@ class FestivalStaticGenerator
             "australia-pacific" => "AUSTRALASIA/PACIFIC",
         ];
 
-        // $allFestivals = [];
-        // foreach ($continentMappings as $key => $label) {
-        //     $allFestivals[$key] = $this->fetchAndProcessFestivals($label);
-        // }
-        // Cache::clear();
-        $allFestivals = Cache::remember(
-            "festivals",
-            now()->addDay(),
-            function () use ($continentMappings) {
-                $festivals = [];
-                foreach ($continentMappings as $key => $label) {
-                    $festivals[$key] = $this->fetchAndProcessFestivals($label);
-                }
-                return $festivals;
-            },
-        );
+        foreach ($continentMappings as $key => $label) {
+            $allFestivals[$key] = $this->fetchAndProcessFestivals($label);
+        }
 
         // Render Blade to HTML
         $html = View::make("home", [
