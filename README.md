@@ -38,7 +38,7 @@ This project is built with **Laravel 12** (requires **PHP 8.2+**).
 ### Dependencies
 
 * [`google/apiclient` ^2.0](https://github.com/googleapis/google-api-php-client)
-* [`revolution/laravel-google-sheets` ^7.0](https://github.com/revolution/laravel-google-sheets)
+* [`revolution/laravel-google-sheets` ^7.0](https://github.com/invokable/laravel-google-sheets)
 
 ### Frontend
 
