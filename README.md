@@ -2,7 +2,6 @@
 
 Turning the community-maintained **Improv Festivals Spreadsheet** into a live, browsable website.
 
----
 
 ## About
 
@@ -17,7 +16,6 @@ The beauty of this project is that the **community already keeps the spreadsheet
 
 This project is **open source**, because I see it as a community effort. Anyone can fork it, customize it, and host it. No attribution required.
 
----
 
 ## Hosting
 
@@ -29,10 +27,9 @@ My hope is that another (or many!) developer(s) from the improv community will p
 
 Feel free to:
 
-* Change the design, play with colors (see `/public/css/colors.css` for some extras),
+* Change the design, play with colors (see `/resources/css/colors.css` for some extras),
 * Or rebuild it completely and make it your own.
 
----
 
 ## Technical Details
 
@@ -61,12 +58,12 @@ This project is built with **Laravel 12** (requires **PHP 8.2+**).
 
    * Requires that **queue workers** are enabled on your server.
 
----
 
 ## Contributing
 
-This is a small token of gratitude to the improv community, which has shaped my life in many ways.
+This is a small token of gratitude to the improv community, which has shaped my life in many ways.\
 If you’d like to extend or host it, please do!
 
-Questions? Need setup help?
+Questions?\
+Need setup help?\
 📧 [elvira@radical-elements.com](mailto:elvira@radical-elements.com)
