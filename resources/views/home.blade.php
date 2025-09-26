@@ -39,7 +39,7 @@
 
         <header class="text-center mb-4 mb-lg-5 pt-3">
             <h1>Improv Festivals Worldwide</h1>
-            <p><strong>Improvisers are awesome.</strong><br>They maintain a <a href="https://docs.google.com/spreadsheets/d/{{ env('FESTIVALS_GSHEET_ID') }}" target="_blank" title="Improv Festivals Worlwide Google Sheet">shareable spreadsheet</a> of most improv festivals in the world.<br>This <a href="#" target="_blank" title="Improv Festivals Worldwide Project Github page">open-source project</a> ✨magically✨ turns that spreadsheet into a website (refreshes hourly).</p>
+            <p><strong>Improvisers are awesome.</strong><br>They maintain a <a href="https://docs.google.com/spreadsheets/d/1vrGuM1F197WMffNOm6wFQBpGYtXDiMUTlBvKi_GQedo/edit" target="_blank" title="Improv Festivals Worlwide Google Sheet">shareable spreadsheet</a> of most improv festivals in the world.<br>This <a href="https://github.com/MissFahrenheit/improv-festivals-worldwide" target="_blank" title="Improv Festivals Worldwide Project Github page">open-source project</a> ✨magically✨ turns that spreadsheet into a website (refreshes hourly).</p>
         </header>
 
         <main>
@@ -64,7 +64,7 @@
         </main>
 
         <footer class="text-center pb-1">
-            <small>This is an open-source project. Find it on <a href="#" target="_blank" title="Improv Festivals Worldwide Project Github page">GitHub</a>, fork it, go wild.</small>
+            <small>This is an open-source project. Find it on <a href="https://github.com/MissFahrenheit/improv-festivals-worldwide" target="_blank" title="Improv Festivals Worldwide Project Github page">GitHub</a>, fork it, go wild.</small>
         </footer>
 
     </body>
