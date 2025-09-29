@@ -52,8 +52,8 @@ This project is built with **Laravel 12** (requires **PHP 8.2+**).
 
    * Logic lives in `/app/Services/FestivalStaticGenerator.php`.
 2. The data is injected into Blade templates (`/resources/views/home.blade.php` and `/resources/views/partials/festivals.blade.php`).
-3. The result is saved as **static HTML** (`home.html`) in the `/public` directory.
-4. The `/` route serves this static file directly—for maximum speed.
+3. The result is saved as **static HTML** (`index.html`) in the `/public` directory.
+4. The `/` route serves this static file directly, for maximum speed.
 5. A **scheduled task** (see `/routes/console.php`) runs the command hourly to keep the site fresh.
 
    * Requires that **queue workers** are enabled on your server.
