@@ -35,7 +35,7 @@ class FestivalStaticGenerator
         ])->render();
 
         // Save static HTML to /public/home.html
-        File::put(public_path("home.html"), $html);
+        File::put(public_path("index.html"), $html);
     }
 
     /**

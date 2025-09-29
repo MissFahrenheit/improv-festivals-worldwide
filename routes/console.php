@@ -8,7 +8,7 @@ Artisan::command("fetchFestivals", function (
 ) {
     $this->comment("Generating static festivals HTML...");
     $generator->generate();
-    $this->info("Done! Static home.html updated.");
+    $this->info("Done! Static index.html updated.");
 })
     ->purpose(
         "To fetch festivals from the Google Spreadsheet and regenerate a static home.html",
