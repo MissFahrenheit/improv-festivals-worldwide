@@ -35,11 +35,11 @@
 
     </head>
 
-    <body class="purple">
+    <body>
 
         <header class="text-center mb-4 mb-lg-5 pt-3 px-2">
             <h1>Improv Festivals Worldwide</h1>
-            <p><strong>Improvisers are awesome.</strong><br>They maintain a <a href="https://docs.google.com/spreadsheets/d/1vrGuM1F197WMffNOm6wFQBpGYtXDiMUTlBvKi_GQedo/edit" target="_blank" title="Improv Festivals Worlwide Google Sheet">shareable spreadsheet</a> of most improv festivals in the world.<br>This <a href="https://github.com/MissFahrenheit/improv-festivals-worldwide" target="_blank" title="Improv Festivals Worldwide Project Github page">open-source project</a> ✨magically✨ turns that spreadsheet into a website (refreshes hourly).</p>
+            <p><strong>Improvisers are awesome.</strong><br>They maintain a <a href="https://docs.google.com/spreadsheets/d/1uIyvbpZsPtWmJZJwSlAEG22A8qcozKmK9WuxRYSIOSY/edit" target="_blank" title="Improv Festivals Worlwide Google Sheet">shareable spreadsheet</a> of most improv festivals in the world.<br>This <a href="https://github.com/MissFahrenheit/improv-festivals-worldwide" target="_blank" title="Improv Festivals Worldwide Project Github page">open-source project</a> ✨magically✨ turns that spreadsheet into a website (refreshes hourly).</p>
         </header>
 
         <main>
