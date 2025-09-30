@@ -34,7 +34,7 @@
 
                     <div class="flex align-items-center mb-4 info-row">
                         @include('components.icons', ['icon' => 'globe'])
-                        <a class="ml-2" href="{{ data_get($festival, 'facebook') }}" target="_blank" title="{{ data_get($festival, 'festival-name') }} website">{{ data_get($festival, 'webpage') }}</a>
+                        <a class="ml-2" href="{{ data_get($festival, 'webpage') }}" target="_blank" title="{{ data_get($festival, 'festival-name') }} website">{{ data_get($festival, 'webpage') }}</a>
                     </div>
 
                     <div class="flex align-items-center justify-content-end">
