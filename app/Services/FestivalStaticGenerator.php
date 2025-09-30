@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Classes\Festival;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
@@ -79,6 +80,8 @@ class FestivalStaticGenerator
                 continue;
             }
 
+            $this->fetchRowAndCreateFestival($row);
+
             $festivalData = [];
             foreach ($row as $columnIndex => $attribute) {
                 // Skip if this column index doesn’t exist in headers
@@ -126,6 +129,24 @@ class FestivalStaticGenerator
 
         return $festivals;
     }
+
+    private function fetchRowAndCreateFestival(array $row): Festival
+    {
+        return new Festival(
+            festivalName: $row["festival-name"],
+            city: $row["city"],
+            country: $row["country"],
+            mm: $row["mm"],
+            languages: $row["languages"],
+            webpage: $row["webpage"],
+            facebook: $row["facebook"],
+            email: $row["email"],
+            yearMonth: $this->getFestivalYearAndMonth(),
+            currentYearDate: $this->getCurrentYearDate(),
+            nextYearDate: $this->getNextYearDate(),
+        );
+    }
+
     /**
      * Determine if a festival should be included in the upcoming list,
      * and return the year-month (YYYY--MM) for sorting or display.
