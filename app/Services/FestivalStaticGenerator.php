@@ -3,13 +3,12 @@
 namespace App\Services;
 
 use App\Classes\Festival;
+use App\Classes\YearCase;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Revolution\Google\Sheets\Facades\Sheets;
 
 class FestivalStaticGenerator
@@ -24,6 +23,8 @@ class FestivalStaticGenerator
             "asia" => "ASIA",
             "australia-pacific" => "AUSTRALASIA/PACIFIC",
         ];
+
+        $allFestivals = [];
 
         foreach ($continentMappings as $key => $label) {
             $allFestivals[$key] = $this->fetchAndProcessFestivals($label);
@@ -45,78 +46,38 @@ class FestivalStaticGenerator
      * @param string $mappedContinent The mapped continent name.
      * @return array The processed festivals array.
      */
-    private function fetchAndProcessFestivals($mappedContinent)
+    private function fetchAndProcessFestivals($mappedContinent): ?array
     {
         // Fetch raw spreadsheet data
         $spreadsheetValues = Sheets::spreadsheet(env("FESTIVALS_GSHEET_ID"))
             ->sheet($mappedContinent)
             ->all();
 
-        $currentYear = Carbon::now()->year;
-        $nextYear = $currentYear + 1;
-        $currentMonth = Carbon::now()->month;
-
-        $allowedKeys = [
-            "festival-name",
-            "city",
-            "country",
-            "mm",
-            "languages",
-            "webpage",
-            "facebook",
-            "email",
-            (int) $currentYear,
-            (int) $nextYear,
-        ];
+        $now = Carbon::now();
 
         $festivals = [];
-        $spreadsheetColumns = array_map(
-            fn($column) => Str::slug($column),
-            $spreadsheetValues[0],
-        );
 
         foreach ($spreadsheetValues as $rowIndex => $row) {
             if ($rowIndex === 0) {
                 continue;
             }
 
-            $this->fetchRowAndCreateFestival($row);
-
-            $festivalData = [];
-            foreach ($row as $columnIndex => $attribute) {
-                // Skip if this column index doesn’t exist in headers
-                if (!isset($spreadsheetColumns[$columnIndex])) {
-                    continue;
-                }
-                $columnTitle = $spreadsheetColumns[$columnIndex];
-
-                // Skip if the header is empty
-                if (empty($columnTitle)) {
-                    continue;
-                }
-
-                // Store spreadsheet values: cast "mm" (month) column to int, keep all other allowed columns as strings
-                if (in_array($columnTitle, $allowedKeys)) {
-                    $festivalData[$columnTitle] =
-                        $columnTitle === "mm" ? (int) $attribute : $attribute;
-                }
+            if (empty($row["mm"])) {
+                continue;
             }
 
-            $yearMonth = $this->getFestivalYearAndMonth(
-                $festivalData,
-                $currentYear,
-                $nextYear,
-                $currentMonth,
-            );
-            if ($yearMonth) {
-                $festivalData["year-month"] = $yearMonth;
-                // $festivalData["image"] = "";
-                $festivalData["image"] = $this->getFestivalImage(
-                    $festivalData["webpage"] ?? null,
-                    $festivalData["facebook"] ?? null,
-                );
-                $festivals[$rowIndex] = $festivalData;
-            }
+            // there should be a check here, before doing the image fetching, for the scenario of festival in the past?
+            $festival = $this->fetchRowAndCreateFestival($row, $now);
+
+            // if ($yearMonth) {
+            //     $festivalData["year-month"] = $yearMonth;
+            //     // $festivalData["image"] = "";
+            //     $festivalData["image"] = $this->getFestivalImage(
+            //         $festivalData["webpage"] ?? null,
+            //         $festivalData["facebook"] ?? null,
+            //     );
+            //     $festivals[$rowIndex] = $festivalData;
+            // }
         }
 
         if (!empty($festivals)) {
@@ -130,64 +91,103 @@ class FestivalStaticGenerator
         return $festivals;
     }
 
-    private function fetchRowAndCreateFestival(array $row): Festival
-    {
+    private function fetchRowAndCreateFestival(
+        array $row,
+        Carbon $now,
+    ): Festival {
+        $currentYearDate = $this->getYearColumnValue($now->year, $row);
+        $nextYearDate = $this->getYearColumnValue($now->addYear()->year, $row);
+        $yearCase = $this->determineYearCase($currentYearDate, $nextYearDate);
+
         return new Festival(
-            festivalName: $row["festival-name"],
+            name: $row["festival-name"],
             city: $row["city"],
             country: $row["country"],
-            mm: $row["mm"],
             languages: $row["languages"],
             webpage: $row["webpage"],
             facebook: $row["facebook"],
             email: $row["email"],
-            yearMonth: $this->getFestivalYearAndMonth(),
-            currentYearDate: $this->getCurrentYearDate(),
-            nextYearDate: $this->getNextYearDate(),
+            image: $this->getFestivalImage($row["webpage"], $row["facebook"]),
+            yearMonth: $this->getFestivalYearAndMonth(
+                $row["mm"],
+                $now,
+                $yearCase,
+            ),
+            currentYearDate: $currentYearDate,
+            nextYearDate: $nextYearDate,
         );
+    }
+
+    private function getYearColumnValue(int $year, array $row): ?string
+    {
+        // Check if year column has value
+        $value = $row[$year] ?? null;
+
+        if (empty($value)) {
+            return null;
+        }
+
+        // If value contains numeric characters
+        if (preg_match("/\d/", $value)) {
+            return $value;
+        }
+
+        return null;
+    }
+
+    private function determineYearCase(
+        ?int $currentYear,
+        ?int $nextYear,
+    ): YearCase {
+        if (empty($currentYear) && empty($nextYear)) {
+            return YearCase::ALL_EMPTY;
+        }
+        if (empty($currentYear)) {
+            return YearCase::NEXT_YEAR_EXISTS;
+        }
+
+        if (empty($nextYear)) {
+            return YearCase::CURRENT_YEAR_EXISTS;
+        }
+
+        return YearCase::BOTH_YEARS_EXIST;
     }
 
     /**
      * Determine if a festival should be included in the upcoming list,
      * and return the year-month (YYYY--MM) for sorting or display.
      *
-     * @param array $festivalData Festival row data from the spreadsheet.
-     * @param int $currentYear Current year.
-     * @param int $nextYear Next year.
-     * @param int $currentMonth Current month (1-12).
+     * @param int $monthNumber Current year.
+     * @param Carbon $now Current datetime Carbon object
+     * @param YearCase $yearCase enum with possible year column scenarios
      * @return string|null Returns YYYY-MM string if the festival is upcoming, null otherwise.
      */
     private function getFestivalYearAndMonth(
-        array $festivalData,
-        int $currentYear,
-        int $nextYear,
-        int $currentMonth,
+        int $monthNumber,
+        Carbon $now,
+        YearCase $yearCase,
     ): ?string {
-        $festivalMonth = $festivalData["mm"] ?? null;
-        if (!$festivalMonth) {
-            return null;
-        } // skip if no month info
+        $getYearMonthFormat = fn(int $year, int $monthNumber) => Carbon::create(
+            $year,
+            $monthNumber,
+            1,
+        )->format("Y-m");
 
-        // Check current year column
-        $currentYearValue = $festivalData[$currentYear] ?? null;
-        if (
-            $currentYearValue &&
-            preg_match("/\d/", $currentYearValue) &&
-            $festivalMonth >= $currentMonth
-        ) {
-            return Carbon::create($currentYear, $festivalMonth, 1)->format(
-                "Y-m",
-            );
-        }
+        $isFestivalMonthAfterCurrentMonth = $monthNumber >= $now->month;
 
-        // Check next year column
-        $nextYearValue = $festivalData[$nextYear] ?? null;
-        if ($nextYearValue && preg_match("/\d/", $nextYearValue)) {
-            return Carbon::create($nextYear, $festivalMonth, 1)->format("Y-m");
-        }
-
-        // Past festival, skip
-        return null;
+        return match ($yearCase) {
+            YearCase::ALL_EMPTY => null,
+            YearCase::BOTH_YEARS_EXIST => $isFestivalMonthAfterCurrentMonth
+                ? $getYearMonthFormat($now->year, $monthNumber)
+                : $getYearMonthFormat($now->addYear()->year, $monthNumber),
+            YearCase::CURRENT_YEAR_EXISTS => $isFestivalMonthAfterCurrentMonth
+                ? $getYearMonthFormat($now->year, $monthNumber)
+                : null,
+            YearCase::NEXT_YEAR_EXISTS => $getYearMonthFormat(
+                $now->addYear()->year,
+                $monthNumber,
+            ),
+        };
     }
 
     /**
@@ -197,8 +197,10 @@ class FestivalStaticGenerator
      * @param string|null $facebook The URL of the festival's Facebook page.
      * @return string|null The URL of the image, or a default image if not found.
      */
-    protected function getFestivalImage($webpage, $facebook)
-    {
+    protected function getFestivalImage(
+        ?string $webpage,
+        ?string $facebook,
+    ): ?string {
         if (empty($webpage) && empty($facebook)) {
             return null;
         }
@@ -228,7 +230,7 @@ class FestivalStaticGenerator
      * @param string $url The URL of the webpage.
      * @return string|null The OG image URL or null if not found.
      */
-    protected function fetchOgImage($url)
+    protected function fetchOgImage(string $url): ?string
     {
         try {
             $response = Http::get($url);
@@ -255,7 +257,7 @@ class FestivalStaticGenerator
      * @param string $facebookUrl The URL of the Facebook page or event.
      * @return string|null The Facebook image URL or null if not found.
      */
-    protected function fetchFacebookImage($facebookUrl)
+    protected function fetchFacebookImage(string $facebookUrl): ?string
     {
         $facebookId = $this->extractFacebookId($facebookUrl);
 
@@ -283,7 +285,7 @@ class FestivalStaticGenerator
      * @param string $facebookUrl The URL of the Facebook page or event.
      * @return string|null The Facebook ID or null if not found.
      */
-    protected function extractFacebookId($facebookUrl)
+    protected function extractFacebookId(string $facebookUrl): ?string
     {
         $parts = explode("/", rtrim($facebookUrl, "/"));
         return end($parts);
