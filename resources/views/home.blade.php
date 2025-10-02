@@ -45,19 +45,24 @@
         <main>
             <div class="flex align-items-center justify-content-center px-2 px-lg-4 mb-4">
                 <nav class="flex flex-wrap justify-content-center align-items-center py-2 gap-2 px-lg-3">
-                    @foreach ($continents as $key => $continent)
-                        <button type="button" class="py-2 px-3 pill tab {{ $key === 'europe' ? 'active' : '' }}" data-continent="{{ $key }}" id="{{ $key }}">
-                            {{ Str::title($continent) }}
+                    @foreach ($continents as $continent)
+                        <button type="button" class="py-2 px-3 pill tab {{ $continent->id === 'europe' ? 'active' : '' }}" data-continent="{{ $continent->id }}" id="{{ $continent->id }}">
+                            {{ Str::title($continent->label) }}
                         </button>
                     @endforeach
                 </nav>
             </div>
 
             <div class="pt-3 pt-lg-4 pb-5">
-                @foreach ($continents as $key => $continent)
-                    <div id="{{ $key }}-content" data-content-continent="{{ $key }}" style="{{ $key !== 'europe' ? 'display:none' : '' }}">
+                @foreach ($continents as $continent)
+                    <div id="{{ $continent->id }}-content" data-content-continent="{{ $continent->id }}" style="{{ $continent->id !== 'europe' ? 'display:none' : '' }}">
                         {{-- @include('partials.skeleton') --}}
-                        @include('partials.festivals', ['festivals' => $festivals[$key]])
+                        @include('partials.festivals', [
+                            'festivals' => array_filter(
+                                $festivals,
+                                fn($festival) => $festival->continent->id === $continent->id
+                            )
+                        ]);
                     </div>
                 @endforeach
             </div>
