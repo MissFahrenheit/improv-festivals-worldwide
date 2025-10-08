@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -13,7 +12,7 @@ use Revolution\Google\Sheets\Facades\Sheets;
 
 class FestivalStaticGenerator
 {
-    public function generate()
+    public function generate(): void
     {
         // Mapping URL-friendly slugs to actual sheet names in the spreadsheet
         $continentMappings = [
@@ -24,14 +23,15 @@ class FestivalStaticGenerator
             "australia-pacific" => "AUSTRALASIA/PACIFIC",
         ];
 
+        $festivals = [];
         foreach ($continentMappings as $key => $label) {
-            $allFestivals[$key] = $this->fetchAndProcessFestivals($label);
+            $festivals[$key] = $this->fetchAndProcessFestivals($label);
         }
 
         // Render Blade to HTML
         $html = View::make("home", [
             "continents" => $continentMappings,
-            "festivals" => $allFestivals,
+            "festivals" => $festivals,
         ])->render();
 
         // Save static HTML to /public/home.html
@@ -44,7 +44,7 @@ class FestivalStaticGenerator
      * @param string $mappedContinent The mapped continent name.
      * @return array The processed festivals array.
      */
-    private function fetchAndProcessFestivals($mappedContinent)
+    private function fetchAndProcessFestivals($mappedContinent): array
     {
         // Fetch raw spreadsheet data
         $spreadsheetValues = Sheets::spreadsheet(env("FESTIVALS_GSHEET_ID"))
@@ -99,6 +99,10 @@ class FestivalStaticGenerator
                 }
             }
 
+            $festivalData["normalized_webpage"] = $this->normalizeUrl(
+                $festivalData["webpage"] ?? null,
+            );
+
             $yearMonth = $this->getFestivalYearAndMonth(
                 $festivalData,
                 $currentYear,
@@ -107,9 +111,9 @@ class FestivalStaticGenerator
             );
             if ($yearMonth) {
                 $festivalData["year-month"] = $yearMonth;
-                // $festivalData["image"] = "";
+                $festivalData["image"] = "";
                 $festivalData["image"] = $this->getFestivalImage(
-                    $festivalData["webpage"] ?? null,
+                    $festivalData["normalized_webpage"] ?? null,
                     $festivalData["facebook"] ?? null,
                 );
                 $festivals[$rowIndex] = $festivalData;
@@ -126,6 +130,24 @@ class FestivalStaticGenerator
 
         return $festivals;
     }
+
+    private function normalizeUrl(?string $webpage): ?string
+    {
+        if (empty($webpage)) {
+            return null;
+        }
+
+        $url = trim($webpage);
+
+        // If it doesn't start with a scheme, prepend https://
+        if (!preg_match("~^https?://~i", $url)) {
+            $url = "https://$url";
+        }
+
+        // Validate the final form
+        return filter_var($url, FILTER_VALIDATE_URL) ? $url : null;
+    }
+
     /**
      * Determine if a festival should be included in the upcoming list,
      * and return the year-month (YYYY--MM) for sorting or display.
@@ -176,7 +198,7 @@ class FestivalStaticGenerator
      * @param string|null $facebook The URL of the festival's Facebook page.
      * @return string|null The URL of the image, or a default image if not found.
      */
-    protected function getFestivalImage($webpage, $facebook)
+    protected function getFestivalImage($webpage, $facebook): ?string
     {
         if (empty($webpage) && empty($facebook)) {
             return null;
@@ -207,7 +229,7 @@ class FestivalStaticGenerator
      * @param string $url The URL of the webpage.
      * @return string|null The OG image URL or null if not found.
      */
-    protected function fetchOgImage($url)
+    protected function fetchOgImage($url): ?string
     {
         try {
             $response = Http::get($url);
@@ -234,7 +256,7 @@ class FestivalStaticGenerator
      * @param string $facebookUrl The URL of the Facebook page or event.
      * @return string|null The Facebook image URL or null if not found.
      */
-    protected function fetchFacebookImage($facebookUrl)
+    protected function fetchFacebookImage($facebookUrl): ?string
     {
         $facebookId = $this->extractFacebookId($facebookUrl);
 
@@ -262,7 +284,7 @@ class FestivalStaticGenerator
      * @param string $facebookUrl The URL of the Facebook page or event.
      * @return string|null The Facebook ID or null if not found.
      */
-    protected function extractFacebookId($facebookUrl)
+    protected function extractFacebookId($facebookUrl): ?string
     {
         $parts = explode("/", rtrim($facebookUrl, "/"));
         return end($parts);
