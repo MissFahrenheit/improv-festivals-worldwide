@@ -21,6 +21,7 @@ class FestivalStaticGenerator
             "south-america" => "SOUTH AMERICA",
             "asia" => "ASIA",
             "australia-pacific" => "AUSTRALASIA/PACIFIC",
+            "canada" => "CANADA",
         ];
 
         $festivals = [];
