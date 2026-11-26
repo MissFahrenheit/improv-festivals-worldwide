@@ -28,6 +28,14 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    'festivals' => [
+        'sheet_id' => env('FESTIVALS_GSHEET_ID'),
+    ],
+
+    'facebook' => [
+        'access_token' => env('FACEBOOK_ACCESS_TOKEN'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
