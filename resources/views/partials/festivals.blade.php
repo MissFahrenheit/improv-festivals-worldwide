@@ -16,7 +16,7 @@
                         </div>
 
                         @if (data_get($festival, 'image'))
-                            <img class="festival-image flex-shrink-1" loading="lazy" src="{{ data_get($festival, 'image') }}" alt="{{ data_get($festival, 'festival-name-alphabetized') }}" height=50/>
+                            <img class="festival-image flex-shrink-1" loading="lazy" src="{{ data_get($festival, 'image') }}" alt="{{ data_get($festival, 'festival-name') }}" height=50 onerror="this.remove()"/>
                         @endif
                     </div>
 
@@ -27,15 +27,19 @@
                         <span class="ml-2" >{{ data_get($festival, 'languages') }}</span>
                     </div>
 
-                    <div class="flex align-items-center mb-2 info-row">
-                        @include('components.icons', ['icon' => 'facebook-logo'])
-                        <a class="ml-2" href="{{ data_get($festival, 'facebook') }}" target="_blank" title="{{ data_get($festival, 'festival-name') }} facebook page">Facebook page</a>
-                    </div>
+                    @if (data_get($festival, 'facebook'))
+                        <div class="flex align-items-center mb-2 info-row">
+                            @include('components.icons', ['icon' => 'facebook-logo'])
+                            <a class="ml-2" href="{{ data_get($festival, 'facebook') }}" target="_blank" title="{{ data_get($festival, 'festival-name') }} facebook page">Facebook page</a>
+                        </div>
+                    @endif
 
-                    <div class="flex align-items-center mb-4 info-row">
-                        @include('components.icons', ['icon' => 'globe'])
-                        <a class="ml-2" href="{{ data_get($festival, 'normalized_webpage') }}" target="_blank" title="{{ data_get($festival, 'festival-name') }} website">{{ data_get($festival, 'webpage') }}</a>
-                    </div>
+                    @if (data_get($festival, 'normalized_webpage'))
+                        <div class="flex align-items-center mb-4 info-row">
+                            @include('components.icons', ['icon' => 'globe'])
+                            <a class="ml-2" href="{{ data_get($festival, 'normalized_webpage') }}" target="_blank" title="{{ data_get($festival, 'festival-name') }} website">{{ data_get($festival, 'webpage') }}</a>
+                        </div>
+                    @endif
 
                     <div class="flex align-items-center justify-content-end">
                         <div class="flex align-items-center px-3 py-2 pill location">

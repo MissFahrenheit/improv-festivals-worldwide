@@ -49,7 +49,7 @@ class FestivalStaticGenerator
     private function fetchAndProcessFestivals($mappedContinent): array
     {
         // Fetch raw spreadsheet data
-        $spreadsheetValues = Sheets::spreadsheet(env("FESTIVALS_GSHEET_ID"))
+        $spreadsheetValues = Sheets::spreadsheet(config("services.festivals.sheet_id"))
             ->sheet($mappedContinent)
             ->all();
 
@@ -75,6 +75,18 @@ class FestivalStaticGenerator
             fn($column) => Str::slug($column),
             $spreadsheetValues[0],
         );
+
+        // The name column's header differs between tabs ("Festival Name",
+        // "Festival Name (alphabetized)", "•Festival Name ", or a stray
+        // character like "`"), but it is always the first column.
+        $nameColumn = 0;
+        foreach ($spreadsheetColumns as $index => $column) {
+            if (str_contains($column, "festival-name")) {
+                $nameColumn = $index;
+                break;
+            }
+        }
+        $spreadsheetColumns[$nameColumn] = "festival-name";
 
         foreach ($spreadsheetValues as $rowIndex => $row) {
             if ($rowIndex === 0) {
@@ -104,6 +116,12 @@ class FestivalStaticGenerator
             $festivalData["normalized_webpage"] = $this->normalizeUrl(
                 $festivalData["webpage"] ?? null,
             );
+            // Only an http(s) link may reach the page's href.
+            $facebook = $this->normalizeUrl($festivalData["facebook"] ?? null);
+            $festivalData["facebook"] =
+                $facebook && preg_match("~(facebook|fb)\.com~i", $facebook)
+                    ? $facebook
+                    : null;
 
             $yearMonth = $this->getFestivalYearAndMonth(
                 $festivalData,
@@ -167,9 +185,9 @@ class FestivalStaticGenerator
         int $currentMonth,
     ): ?string {
         $festivalMonth = $festivalData["mm"] ?? null;
-        if (!$festivalMonth) {
+        if (!$festivalMonth || $festivalMonth < 1 || $festivalMonth > 12) {
             return null;
-        } // skip if no month info
+        } // skip if no (valid) month info
 
         // Check current year column
         $currentYearValue = $festivalData[$currentYear] ?? null;
@@ -234,7 +252,7 @@ class FestivalStaticGenerator
     protected function fetchOgImage($url): ?string
     {
         try {
-            $response = Http::get($url);
+            $response = Http::timeout(10)->get($url);
 
             if ($response->successful()) {
                 $html = $response->body();
@@ -264,9 +282,9 @@ class FestivalStaticGenerator
 
         if ($facebookId) {
             try {
-                $response = Http::get(
+                $response = Http::timeout(10)->get(
                     "https://graph.facebook.com/{$facebookId}/picture?type=large&access_token=" .
-                        env("FACEBOOK_ACCESS_TOKEN"),
+                        config("services.facebook.access_token"),
                 );
 
                 if ($response->successful()) {
