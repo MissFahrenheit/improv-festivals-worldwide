@@ -64,7 +64,7 @@
         </main>
 
         <footer class="text-center pb-1">
-            <small>This is an open-source project. Find it on <a href="https://github.com/MissFahrenheit/improv-festivals-worldwide" target="_blank" title="Improv Festivals Worldwide Project Github page">GitHub</a>, fork it, go wild.</small>
+            <small>This is an open-source project. Find it on <a href="https://github.com/MissFahrenheit/improv-festivals-worldwide" target="_blank" title="Improv Festivals Worldwide Project Github page">GitHub</a>, fork it, go wild. Built with 🍦 by <a href="https://www.radical-elements.com/" target="_blank" title="Radical Elements website">Radical Elements</a>.</small>
         </footer>
 
     </body>
